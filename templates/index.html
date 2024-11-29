@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Accessibility Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section input {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .input-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .input-section button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .result-box {
+            background-color: #e7f9e7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .result-box.error {
+            background-color: #f9e7e7;
+            color: #d9534f;
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .suggestions {
+            margin-top: 20px;
+        }
+
+        .suggestion-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Automated Accessibility Checker</h1>
+        <p>Analyze your website's accessibility based on WCAG standards</p>
+    </header>
+
+    <div class="container">
+        <div class="input-section">
+            <label for="url">Enter the URL to analyze:</label>
+            <input type="text" id="url" placeholder="e.g., https://example.com">
+            <button onclick="checkAccessibility()">Check Accessibility</button>
+        </div>
+
+        <div class="results" id="results">
+            <!-- Results will be displayed here -->
+        </div>
+
+        <div class="suggestions" id="suggestions">
+            <!-- Actionable suggestions will be shown here -->
+        </div>
+
+        <div class="score">
+            Accessibility Score: <span id="score">-</span>
+        </div>
+    </div>
+
+    <script>
+        function checkAccessibility() {
+            // Clear previous results
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('suggestions').innerHTML = '';
+            document.getElementById('score').innerText = '-';
+
+            const url = document.getElementById('url').value;
+
+            if (!url) {
+                alert("Please enter a valid URL.");
+                return;
+            }
+
+            // Send POST request to backend (Flask API) for accessibility check
+            fetch('http://127.0.0.1:5000/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "message": `check accessibility ${url}` })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response and display the results
+                displayResults(data.response);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("There was an error while checking the accessibility.");
+            });
+        }
+
+        function displayResults(response) {
+            // Display the results from the backend
+            let resultsContainer = document.getElementById('results');
+            if (response.includes('error')) {
+                const errorDiv = document.createElement('div');
+                errorDiv.classList.add('result-box', 'error');
+                errorDiv.innerText = response;
+                resultsContainer.appendChild(errorDiv);
+            } else {
+                const successDiv = document.createElement('div');
+                successDiv.classList.add('result-box');
+                successDiv.innerText = response;
+                resultsContainer.appendChild(successDiv);
+
+                // Example: Update the score (you could parse it dynamically)
+                let score = calculateAccessibilityScore(response); // Placeholder function
+                document.getElementById('score').innerText = score;
+            }
+
+            // Show actionable suggestions (if any)
+            displaySuggestions();
+        }
+
+        function calculateAccessibilityScore(response) {
+            // Example: Calculate the score based on some simple logic (you can adjust this)
+            if (response.includes('missing alt tags')) {
+                return 60; // Example score
+            }
+            return 85; // Example score
+        }
+
+        function displaySuggestions() {
+            let suggestionsContainer = document.getElementById('suggestions');
+            const suggestions = [
+                "Ensure all images have alt attributes for accessibility.",
+                "Use sufficient contrast between text and background.",
+                "Ensure proper heading structure (H1, H2, etc.) for content."
+            ];
+
+            suggestions.forEach(suggestion => {
+                const suggestionDiv = document.createElement('div');
+                suggestionDiv.classList.add('suggestion-item');
+                suggestionDiv.innerText = suggestion;
+                suggestionsContainer.appendChild(suggestionDiv);
+            });
+        }
+    </script>
+</body>
+<script src="https://cdn.botpress.cloud/webchat/v2.2/inject.js"></script>
+<script src="https://files.bpcontent.cloud/2024/11/29/15/20241129155328-2WGYHF2G.js"></script>
+</html>
